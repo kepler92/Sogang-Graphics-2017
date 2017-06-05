@@ -26,7 +26,7 @@ GLint loc_ModelViewProjectionMatrix_GS, loc_ModelViewMatrix_GS, loc_ModelViewMat
 // Selected Shading shader
 #define PS	0
 #define GS	1
-int selectShader = GS;
+int selectShader = PS;
 GLuint h_ShaderProgram;
 GLint loc_ModelViewProjectionMatrix, loc_ModelViewMatrix, loc_ModelViewMatrixInvTrans;
 
@@ -176,8 +176,13 @@ void set_Shader_Setting(void) {
 
 	if (selectShader == PS)
 		loc_blind_effect = glGetUniformLocation(h_ShaderProgram_PS, "u_blind_effect");
-
 	
+
+	int light_on[NUMBER_OF_LIGHT_SUPPORTED];
+	for (i = 0; i < NUMBER_OF_LIGHT_SUPPORTED; i++)
+		light_on[i] = light[i].light_on;
+	
+
 	// initialize_lights_and_material
 	glUseProgram(h_ShaderProgram);
 
@@ -209,7 +214,68 @@ void set_Shader_Setting(void) {
 	if (selectShader == PS)
 		glUniform1i(loc_blind_effect, 0);
 
+
+	// set_up_scene_lights
+	light[0].light_on = light_on[0];
+	light[0].position[0] = 0.0f; light[0].position[1] = 10.0f; 	// point light position in EC
+	light[0].position[2] = 0.0f; light[0].position[3] = 1.0f;
+
+	light[0].ambient_color[0] = 0.3f; light[0].ambient_color[1] = 0.3f;
+	light[0].ambient_color[2] = 0.3f; light[0].ambient_color[3] = 1.0f;
+
+	light[0].diffuse_color[0] = 0.7f; light[0].diffuse_color[1] = 0.7f;
+	light[0].diffuse_color[2] = 0.7f; light[0].diffuse_color[3] = 1.0f;
+
+	light[0].specular_color[0] = 0.9f; light[0].specular_color[1] = 0.9f;
+	light[0].specular_color[2] = 0.9f; light[0].specular_color[3] = 1.0f;
+
+	// spot_light_WC: use light 1
+	light[1].light_on = light_on[1];
+	light[1].position[0] = -200.0f; light[1].position[1] = 500.0f; // spot light position in WC
+	light[1].position[2] = -200.0f; light[1].position[3] = 1.0f;
+
+	light[1].ambient_color[0] = 0.2f; light[1].ambient_color[1] = 0.2f;
+	light[1].ambient_color[2] = 0.2f; light[1].ambient_color[3] = 1.0f;
+
+	light[1].diffuse_color[0] = 0.82f; light[1].diffuse_color[1] = 0.82f;
+	light[1].diffuse_color[2] = 0.82f; light[1].diffuse_color[3] = 1.0f;
+
+	light[1].specular_color[0] = 0.82f; light[1].specular_color[1] = 0.82f;
+	light[1].specular_color[2] = 0.82f; light[1].specular_color[3] = 1.0f;
+
+	light[1].spot_direction[0] = 0.0f; light[1].spot_direction[1] = -1.0f; // spot light direction in WC
+	light[1].spot_direction[2] = 0.0f;
+	light[1].spot_cutoff_angle = 20.0f;
+	light[1].spot_exponent = 27.0f;
+
+	glUseProgram(h_ShaderProgram);
+	glUniform1i(loc_light[0].light_on, light[0].light_on);
+	glUniform4fv(loc_light[0].position, 1, light[0].position);
+	glUniform4fv(loc_light[0].ambient_color, 1, light[0].ambient_color);
+	glUniform4fv(loc_light[0].diffuse_color, 1, light[0].diffuse_color);
+	glUniform4fv(loc_light[0].specular_color, 1, light[0].specular_color);
+
+	glUniform1i(loc_light[1].light_on, light[1].light_on);
+	// need to supply position in EC for shading
+	glm::vec4 position_EC = ViewMatrix * glm::vec4(light[1].position[0], light[1].position[1],
+		light[1].position[2], light[1].position[3]);
+	glUniform4fv(loc_light[1].position, 1, &position_EC[0]);
+	glUniform4fv(loc_light[1].ambient_color, 1, light[1].ambient_color);
+	glUniform4fv(loc_light[1].diffuse_color, 1, light[1].diffuse_color);
+	glUniform4fv(loc_light[1].specular_color, 1, light[1].specular_color);
+	// need to supply direction in EC for shading in this example shader
+	// note that the viewing transform is a rigid body transform
+	// thus transpose(inverse(mat3(ViewMatrix)) = mat3(ViewMatrix)
+	glm::vec3 direction_EC = glm::mat3(ViewMatrix) * glm::vec3(light[1].spot_direction[0], light[1].spot_direction[1],
+		light[1].spot_direction[2]);
+	glUniform3fv(loc_light[1].spot_direction, 1, &direction_EC[0]);
+	glUniform1f(loc_light[1].spot_cutoff_angle, light[1].spot_cutoff_angle);
+	glUniform1f(loc_light[1].spot_exponent, light[1].spot_exponent);
 	glUseProgram(0);
+
+	glUseProgram(0);
+
+	//set_up_scene_lights();
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -277,6 +343,26 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 }
 
+unsigned int rightbutton_pressed = 0;
+
+void mouse(int button, int state, int x, int y)  {
+	if (button == GLUT_RIGHT_BUTTON) {
+		if (state == GLUT_DOWN) {
+			selectShader = GS;
+			fprintf(stdout, "### Gouraud Shader \n");
+			//glutPostRedisplay();
+		}
+
+		else {
+			selectShader = PS;
+			fprintf(stdout, "### Phong Shader \n");
+			//glutPostRedisplay();
+		}
+
+		set_Shader_Setting();
+	}
+}
+
 void reshape(int width, int height) {
 	float aspect_ratio;
 	glViewport(0, 0, width, height);
@@ -308,6 +394,7 @@ void cleanup(void) {
 void register_callbacks(void) {
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
+	glutMouseFunc(mouse);
 	glutReshapeFunc(reshape);
 	glutTimerFunc(100, timer_scene, 0);
 	glutCloseFunc(cleanup);
