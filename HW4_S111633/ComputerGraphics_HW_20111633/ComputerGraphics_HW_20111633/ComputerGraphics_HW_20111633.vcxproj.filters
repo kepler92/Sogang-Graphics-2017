@@ -27,21 +27,30 @@
     <None Include="Shaders\simple.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Shaders\Phong.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Shaders\Phong.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="5.3.5.Tiger_Optimus_PS_GLSL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Shaders\LoadShaders.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Tiger_Shading_GS_GLSL.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Shaders\LoadShaders.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="My_Shading.h">
+    <ClInclude Include="Shading.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\LoadShaders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

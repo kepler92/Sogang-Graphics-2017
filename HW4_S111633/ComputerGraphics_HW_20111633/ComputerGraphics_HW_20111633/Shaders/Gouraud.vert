@@ -64,7 +64,8 @@ vec4 lighting_equation(in vec3 P_EC, in vec3 N_EC) {
 				vec3 spot_dir = normalize(u_light[i].spot_direction);
 
 				tmp_float = dot(-L_EC, spot_dir);
-				if (tmp_float >= cos(radians(u_light[i].spot_cutoff_angle))) {
+				//if (tmp_float >= cos(radians(u_light[i].spot_cutoff_angle))) {
+				if (tmp_float >= cos(radians(spot_cutoff_angle))) {
 					tmp_float = pow(tmp_float, u_light[i].spot_exponent);
 				}
 				else 

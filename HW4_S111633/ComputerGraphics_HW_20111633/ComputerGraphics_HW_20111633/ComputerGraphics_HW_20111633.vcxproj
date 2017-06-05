@@ -13,16 +13,19 @@
   <ItemGroup>
     <None Include="Shaders\Gouraud.frag" />
     <None Include="Shaders\Gouraud.vert" />
+    <None Include="Shaders\Phong.frag" />
+    <None Include="Shaders\Phong.vert" />
     <None Include="Shaders\simple.frag" />
     <None Include="Shaders\simple.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="5.3.5.Tiger_Optimus_PS_GLSL.cpp" />
     <ClCompile Include="Shaders\LoadShaders.cpp" />
-    <ClCompile Include="Tiger_Shading_GS_GLSL.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="My_Shading.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="Shaders\LoadShaders.h" />
+    <ClInclude Include="Shading.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CAA952A0-472C-4551-9EBE-3300908B92D6}</ProjectGuid>
