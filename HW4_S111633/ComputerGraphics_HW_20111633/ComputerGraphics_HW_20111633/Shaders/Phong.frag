@@ -24,8 +24,13 @@ uniform LIGHT u_light[NUMBER_OF_LIGHTS_SUPPORTED];
 uniform MATERIAL u_material;
 uniform bool u_blind_effect;
 
+// 조명과 관련된 쉐이딩 효과
+uniform bool u_added_effect;
+uniform int u_added_effect_value;
+
 const float zero_f = 0.0f;
 const float one_f = 1.0f;
+const float percent_f = 100.0f;
 
 in vec3 v_position_EC;
 in vec3 v_normal_EC;
@@ -68,6 +73,11 @@ vec4 lighting_equation(in vec3 P_EC, in vec3 N_EC) {
 					if (!u_blind_effect) {
 						// Normal Phong shading mode
 			 			tmp_float = pow(tmp_float, u_light[i].spot_exponent);
+
+						if (u_added_effect) {
+							float intensity = u_added_effect_value / percent_f;
+							tmp_float *= intensity;
+						}
 					}
 					else {
 						// When you read this shader first time, just ignore this blind effect!!!

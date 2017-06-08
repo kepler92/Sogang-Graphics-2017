@@ -19,6 +19,12 @@ GLint loc_global_ambient_color;
 loc_light_Parameters loc_light[NUMBER_OF_LIGHT_SUPPORTED];
 loc_Material_Parameters loc_material;
 int loc_blind_effect;
+int loc_added_effect, loc_added_effect_value;
+#include <time.h>
+#include <algorithm>
+int loc_added_effect_startTime = 0;
+float loc_added_effect_speed = 10.0f;
+
 
 GLint loc_ModelViewProjectionMatrix_PS, loc_ModelViewMatrix_PS, loc_ModelViewMatrixInvTrans_PS;
 GLint loc_ModelViewProjectionMatrix_GS, loc_ModelViewMatrix_GS, loc_ModelViewMatrixInvTrans_GS;
@@ -54,6 +60,19 @@ float rotation_angle_tiger = 0.0f;
 int flag_draw_objects = 1;
 
 void display(void) {
+	if (loc_added_effect_startTime) {
+		glUseProgram(h_ShaderProgram_PS);
+		//int effect_timer = (int)((1 + cos(clock() - loc_added_effect_startTime)) * 50);
+		int effect_diff = clock() - loc_added_effect_startTime;
+		int effect_oneCycle = CLOCKS_PER_SEC / loc_added_effect_speed * 20.0f;
+		int effect_oneCycle_turningPoint = effect_oneCycle / 2.0f;
+		int effect_oneCycle_nowPosition = abs(effect_diff % effect_oneCycle - effect_oneCycle_turningPoint);
+		int effect_normalize = effect_oneCycle_nowPosition * 100 / effect_oneCycle_turningPoint;
+		int effect_value = effect_normalize;
+		glUniform1i(loc_added_effect_value, effect_value);
+		glUseProgram(0);
+	}
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(h_ShaderProgram);
@@ -174,8 +193,11 @@ void set_Shader_Setting(void) {
 	loc_material.emissive_color = glGetUniformLocation(h_ShaderProgram, "u_material.emissive_color");
 	loc_material.specular_exponent = glGetUniformLocation(h_ShaderProgram, "u_material.specular_exponent");
 
-	if (selectShader == PS)
+	if (selectShader == PS) {
 		loc_blind_effect = glGetUniformLocation(h_ShaderProgram_PS, "u_blind_effect");
+		loc_added_effect = glGetUniformLocation(h_ShaderProgram_PS, "u_added_effect");
+		loc_added_effect_value = glGetUniformLocation(h_ShaderProgram_PS, "u_added_effect_value");
+	}
 	
 
 	int light_on[NUMBER_OF_LIGHT_SUPPORTED];
@@ -211,8 +233,11 @@ void set_Shader_Setting(void) {
 	glUniform4f(loc_material.emissive_color, 0.0f, 0.0f, 0.0f, 1.0f);
 	glUniform1f(loc_material.specular_exponent, 0.0f); // [0.0, 128.0]
 
-	if (selectShader == PS)
+	if (selectShader == PS) {
 		glUniform1i(loc_blind_effect, 0);
+		glUniform1i(loc_added_effect, 0);
+		glUniform1i(loc_added_effect_value, 1);
+	}
 
 
 	// set_up_scene_lights
@@ -282,6 +307,7 @@ void keyboard(unsigned char key, int x, int y) {
 	static int flag_cull_face = 0;
 	static int flag_polygon_mode = 1;
 	static int flag_blind_effect = 0;
+	static int flag_added_effect = 0;
 
 	if ((key >= '0') && (key <= '0' + NUMBER_OF_LIGHT_SUPPORTED - 1)) {
 		int light_ID = (int) (key - '0');
@@ -299,6 +325,7 @@ void keyboard(unsigned char key, int x, int y) {
 	case 27: // ESC key
 		glutLeaveMainLoop(); // Incur destuction callback for cleanups
 		break;
+	/*
 	case 'c':
 		flag_cull_face = (flag_cull_face + 1) % 3;
 		switch (flag_cull_face) {
@@ -321,6 +348,7 @@ void keyboard(unsigned char key, int x, int y) {
 			break;
 		}
 		break;
+	*/
 	case 'p':
 		flag_polygon_mode = 1 - flag_polygon_mode;
 		if (flag_polygon_mode)
@@ -335,6 +363,30 @@ void keyboard(unsigned char key, int x, int y) {
 		glUniform1i(loc_blind_effect, flag_blind_effect);
 		glUseProgram(0);
 		glutPostRedisplay();
+		loc_added_effect_startTime = 0;
+		break;
+	case 'n':
+		flag_added_effect = 1 - flag_added_effect;
+		glUseProgram(h_ShaderProgram_PS);
+		glUniform1i(loc_added_effect, flag_added_effect);
+		loc_added_effect_startTime = clock();
+		glUseProgram(0);
+		glutPostRedisplay();
+		break;
+	case 'h':
+		if (flag_added_effect) {
+			loc_added_effect_speed -= 0.1f;
+			loc_added_effect_speed = std::max(loc_added_effect_speed, 0.1f);
+			fprintf(stdout, "*** Twinkle Speed: %.2f \n", loc_added_effect_speed);
+			glutPostRedisplay();
+		}
+		break;
+	case 'j':
+		if (flag_added_effect) {
+			loc_added_effect_speed += 0.1f;
+			fprintf(stdout, "*** Twinkle Speed: %.2f \n", loc_added_effect_speed);
+			glutPostRedisplay();
+		}
 		break;
 	case 'o':
 		flag_draw_objects = 1 - flag_draw_objects;
@@ -464,8 +516,11 @@ void initialize_lights_and_material(void) { // follow OpenGL conventions for ini
 	glUniform4f(loc_material.emissive_color, 0.0f, 0.0f, 0.0f, 1.0f);
 	glUniform1f(loc_material.specular_exponent, 0.0f); // [0.0, 128.0]
 
-	if (selectShader == PS)
+	if (selectShader == PS) {
 		glUniform1i(loc_blind_effect, 0);
+		glUniform1i(loc_added_effect, 0);
+		glUniform1i(loc_added_effect_value, 1);
+	}
 
 	glUseProgram(0);
 }
@@ -591,7 +646,7 @@ void greetings(char *program_name, char messages[][256], int n_message_lines) {
 void main(int argc, char *argv[]) {
 	// Phong Shading
 	char program_name[64] = "Sogang CSE4170 5.3.5.Tiger_Optimus_PS_GLSL";
-	char messages[N_MESSAGE_LINES][256] = { "    - Keys used: '0', '1', 'c', 'p', 'b', 'o', 'ESC'"  };
+	char messages[N_MESSAGE_LINES][256] = {}; //{ "    - Keys used: '0', '1', 'c', 'p', 'b', 'o', 'ESC'"  };
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
