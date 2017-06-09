@@ -60,7 +60,7 @@ float rotation_angle_tiger = 0.0f;
 int flag_draw_objects = 1;
 
 void display(void) {
-	if (loc_added_effect_startTime) {
+	if (selectShader == PS && loc_added_effect_startTime) {
 		glUseProgram(h_ShaderProgram_PS);
 		//int effect_timer = (int)((1 + cos(clock() - loc_added_effect_startTime)) * 50);
 		int effect_diff = clock() - loc_added_effect_startTime;
@@ -366,16 +366,20 @@ void keyboard(unsigned char key, int x, int y) {
 		loc_added_effect_startTime = 0;
 		break;
 	case 'n':
-		flag_added_effect = 1 - flag_added_effect;
-		glUseProgram(h_ShaderProgram_PS);
-		glUniform1i(loc_added_effect, flag_added_effect);
-		loc_added_effect_startTime = clock();
-		glUseProgram(0);
-		glutPostRedisplay();
+		if (selectShader == PS) {
+			//flag_added_effect = 1 - flag_added_effect;
+			flag_added_effect = 1;
+			glUseProgram(h_ShaderProgram_PS);
+			glUniform1i(loc_added_effect, flag_added_effect);
+			loc_added_effect_startTime = clock();
+			glUseProgram(0);
+			fprintf(stdout, "*** Twinkle Effect \n", loc_added_effect_speed);
+			glutPostRedisplay();
+		}
 		break;
 	case 'h':
 		if (flag_added_effect) {
-			loc_added_effect_speed -= 0.1f;
+			loc_added_effect_speed -= 0.3f;
 			loc_added_effect_speed = std::max(loc_added_effect_speed, 0.1f);
 			fprintf(stdout, "*** Twinkle Speed: %.2f \n", loc_added_effect_speed);
 			glutPostRedisplay();
@@ -383,7 +387,7 @@ void keyboard(unsigned char key, int x, int y) {
 		break;
 	case 'j':
 		if (flag_added_effect) {
-			loc_added_effect_speed += 0.1f;
+			loc_added_effect_speed += 0.3f;
 			fprintf(stdout, "*** Twinkle Speed: %.2f \n", loc_added_effect_speed);
 			glutPostRedisplay();
 		}
@@ -412,6 +416,7 @@ void mouse(int button, int state, int x, int y)  {
 		}
 
 		set_Shader_Setting();
+		loc_added_effect_startTime = 0;
 	}
 }
 
