@@ -24,6 +24,8 @@ uniform LIGHT u_light[NUMBER_OF_LIGHTS_SUPPORTED];
 uniform MATERIAL u_material;
 uniform bool u_blind_effect;
 
+uniform float u_blind_effect_value;
+
 // 조명과 관련된 쉐이딩 효과
 uniform bool u_added_effect;
 uniform int u_added_effect_value;
@@ -81,7 +83,8 @@ vec4 lighting_equation(in vec3 P_EC, in vec3 N_EC) {
 					}
 					else {
 						// When you read this shader first time, just ignore this blind effect!!!
-						tmp_float = cos(180.0f*acos(tmp_float));
+						//tmp_float = cos(180.0f*acos(tmp_float));
+						tmp_float = cos(180.0f / u_blind_effect_value *acos(tmp_float));
 						if (tmp_float < zero_f) 
 							tmp_float = zero_f;
 					}

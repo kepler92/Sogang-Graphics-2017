@@ -19,15 +19,21 @@ GLint loc_global_ambient_color;
 loc_light_Parameters loc_light[NUMBER_OF_LIGHT_SUPPORTED];
 loc_Material_Parameters loc_material;
 int loc_blind_effect;
+float loc_blind_effect_value;
 int loc_added_effect, loc_added_effect_value;
 #include <time.h>
 #include <algorithm>
 int loc_added_effect_startTime = 0;
 float loc_added_effect_speed = 10.0f;
 
+int loc_density, loc_density_value;
+int loc_density_ratio = 0;
+int loc_funny;
+int flag_screen_shader = 0;
 
 GLint loc_ModelViewProjectionMatrix_PS, loc_ModelViewMatrix_PS, loc_ModelViewMatrixInvTrans_PS;
 GLint loc_ModelViewProjectionMatrix_GS, loc_ModelViewMatrix_GS, loc_ModelViewMatrixInvTrans_GS;
+GLint loc_ModelViewMatrix_simple;
 
 // Selected Shading shader
 #define PS	0
@@ -98,7 +104,7 @@ void display(void) {
 		glLineWidth(3.0f);
 		draw_axes();
 		glLineWidth(1.0f);
-	}	
+	}
 	
 	glUseProgram(h_ShaderProgram);
   	set_material_floor();
@@ -140,6 +146,40 @@ void display(void) {
 	draw_axes();
 	glLineWidth(1.0f);
 
+	glUseProgram(h_ShaderProgram_simple);
+	ModelViewMatrix = glm::scale(ViewMatrix, glm::vec3(100.0f, 100.0f, 100.0f));
+	ModelViewProjectionMatrix = ProjectionMatrix * ModelViewMatrix;
+	glUniformMatrix4fv(loc_ModelViewProjectionMatrix_simple, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+	glLineWidth(2.0f);
+	draw_axes();
+	glLineWidth(1.0f);
+
+	glUseProgram(h_ShaderProgram_simple);
+	set_material_floor();
+	float wall_size = 150.0f;
+	ModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 0.0f));
+	ModelViewMatrix = glm::scale(ModelViewMatrix, glm::vec3(wall_size, wall_size, 0.0f));
+	ModelViewProjectionMatrix = ProjectionMatrix * ViewMatrix * ModelViewMatrix;
+	GLfloat wall_color[3] = { 0.6f, 0.0f, 0.4f };
+	glUniform3fv(loc_primitive_color, 1, wall_color);
+	glUniformMatrix4fv(loc_ModelViewProjectionMatrix_simple, 1, GL_FALSE, &ModelViewProjectionMatrix[0][0]);
+
+
+	if (flag_screen_shader) {
+		glUniform1i(loc_density, 1);
+		glUniform1i(loc_density_value, loc_density_ratio);
+		glUniformMatrix4fv(loc_ModelViewMatrix_simple, 1, GL_FALSE, &ModelViewMatrix[0][0]);
+
+		if (flag_screen_shader - 1) glUniform1i(loc_funny, 1);
+		else glUniform1i(loc_funny, 0);
+
+		draw_floor();
+		glUniform1i(loc_density, 0);
+	}
+
+	else
+		draw_floor();
+
 	glUseProgram(0);
 
 	glutSwapBuffers();
@@ -162,6 +202,11 @@ void set_Shader_Setting(void) {
 		loc_ModelViewMatrix = loc_ModelViewMatrix_GS;
 		loc_ModelViewMatrixInvTrans = loc_ModelViewMatrixInvTrans_GS;
 	}
+
+
+	loc_density = glGetUniformLocation(h_ShaderProgram_simple, "u_density_effect");
+	loc_density_value = glGetUniformLocation(h_ShaderProgram_simple, "u_density_value");
+	loc_funny = glGetUniformLocation(h_ShaderProgram_simple, "u_funny_effect");
 
 
 	// prepare_shader_program
@@ -195,6 +240,7 @@ void set_Shader_Setting(void) {
 
 	if (selectShader == PS) {
 		loc_blind_effect = glGetUniformLocation(h_ShaderProgram_PS, "u_blind_effect");
+		loc_blind_effect_value = glGetUniformLocation(h_ShaderProgram_PS, "u_blind_effect_value");
 		loc_added_effect = glGetUniformLocation(h_ShaderProgram_PS, "u_added_effect");
 		loc_added_effect_value = glGetUniformLocation(h_ShaderProgram_PS, "u_added_effect_value");
 	}
@@ -235,9 +281,15 @@ void set_Shader_Setting(void) {
 
 	if (selectShader == PS) {
 		glUniform1i(loc_blind_effect, 0);
+		glUniform1f(loc_blind_effect_value, 1.0f);
 		glUniform1i(loc_added_effect, 0);
 		glUniform1i(loc_added_effect_value, 1);
 	}
+
+
+	glUniform1i(loc_density, 0);
+	glUniform1i(loc_density_value, 0);
+	glUniform1i(loc_funny, 0);
 
 
 	// set_up_scene_lights
@@ -309,6 +361,8 @@ void keyboard(unsigned char key, int x, int y) {
 	static int flag_blind_effect = 0;
 	static int flag_added_effect = 0;
 
+	static int flag_funny_effect = 0;
+
 	if ((key >= '0') && (key <= '0' + NUMBER_OF_LIGHT_SUPPORTED - 1)) {
 		int light_ID = (int) (key - '0');
 
@@ -358,17 +412,19 @@ void keyboard(unsigned char key, int x, int y) {
 		glutPostRedisplay();
 		break;
 	case 'b':
-		flag_blind_effect = 1 - flag_blind_effect;
+		//flag_blind_effect = 1 - flag_blind_effect;
+		flag_blind_effect = (flag_blind_effect + 1) % 6;
 		glUseProgram(h_ShaderProgram_PS);
-		glUniform1i(loc_blind_effect, flag_blind_effect);
+		if (flag_blind_effect == 0) glUniform1i(loc_blind_effect, 0);
+		else glUniform1i(loc_blind_effect, 1);
+		glUniform1f(loc_blind_effect_value, float(flag_blind_effect / 5.0f));
 		glUseProgram(0);
 		glutPostRedisplay();
 		loc_added_effect_startTime = 0;
 		break;
 	case 'n':
 		if (selectShader == PS) {
-			//flag_added_effect = 1 - flag_added_effect;
-			flag_added_effect = 1;
+			flag_added_effect = 1 - flag_added_effect;
 			glUseProgram(h_ShaderProgram_PS);
 			glUniform1i(loc_added_effect, flag_added_effect);
 			loc_added_effect_startTime = clock();
@@ -395,6 +451,23 @@ void keyboard(unsigned char key, int x, int y) {
 	case 'o':
 		flag_draw_objects = 1 - flag_draw_objects;
 		glutPostRedisplay();
+		break;
+	case 'u':
+		flag_screen_shader = 1;
+		loc_density_ratio = std::max(loc_density_ratio - 1, 0);
+		glutPostRedisplay();
+		break;
+	case 'i':
+		flag_screen_shader = 1;
+		loc_density_ratio = std::min(loc_density_ratio + 1, 100);
+		glutPostRedisplay();
+		break;
+	case 'y':
+		if (flag_screen_shader == 2)
+			flag_screen_shader = 1;
+
+		else
+			flag_screen_shader = 2;
 		break;
 	}
 }
@@ -477,6 +550,7 @@ void prepare_shader_program(void) {
 	h_ShaderProgram_simple = LoadShaders(shader_info_simple);
 	loc_primitive_color = glGetUniformLocation(h_ShaderProgram_simple, "u_primitive_color");
 	loc_ModelViewProjectionMatrix_simple = glGetUniformLocation(h_ShaderProgram_simple, "u_ModelViewProjectionMatrix");
+	loc_ModelViewMatrix_simple = glGetUniformLocation(h_ShaderProgram_simple, "u_ModelViewMatrix");
 
 	h_ShaderProgram_GS = LoadShaders(shader_info_GS);
 	loc_ModelViewProjectionMatrix_GS = glGetUniformLocation(h_ShaderProgram_GS, "u_ModelViewProjectionMatrix");
@@ -526,6 +600,11 @@ void initialize_lights_and_material(void) { // follow OpenGL conventions for ini
 		glUniform1i(loc_added_effect, 0);
 		glUniform1i(loc_added_effect_value, 1);
 	}
+
+	glUseProgram(h_ShaderProgram_simple);
+	glUniform1i(loc_density, 0);
+	glUniform1i(loc_density_value, 0);
+	glUniform1i(loc_funny, 0);
 
 	glUseProgram(0);
 }
