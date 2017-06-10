@@ -19,12 +19,11 @@ void main(void) {
 
 		if (u_funny_effect) {
 			vec2 center = vec2(75.0f, 75.0f);
-			float standard_angle = 0.0f * TO_RADIAN;
 
 			float x_angle = pow(object_pos.x - center.x, 2.0f) * TO_RADIAN;
 			float y_angle = pow(object_pos.y - center.y, 2.0f) * TO_RADIAN;
 
-			if ( cos(x_angle) * cos(y_angle) >= 0 )
+			if (cos(x_angle) * cos(y_angle) >= 0 )
 				discard;
 		}
 
