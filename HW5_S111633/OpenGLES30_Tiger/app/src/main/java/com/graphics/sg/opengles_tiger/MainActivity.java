@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.opengl.Matrix;
+import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity{
         if (touchCount < 1 || touchCount > 3) return false;
 
         switch (e.getAction() & MotionEvent.ACTION_MASK) {
+            /*
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
                 touchAvailable = true;
@@ -98,6 +99,72 @@ public class MainActivity extends AppCompatActivity{
                     mRenderer.setLight1();
                     toogleLight = false;
                 }
+                break;
+            */
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN:
+                touchAvailable = true;
+                toogleLight = true;
+                for (int i = 0; i < touchCount; i++) {
+                    currentX[i] = e.getY(i);
+                    currentY[i] = e.getY(i);
+                    previousX[i] = currentX[i];
+                    previousY[i] = currentY[i];
+                }
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                if (!touchAvailable) return false;
+                for (int i = 0; i < touchCount; i++) {
+                    previousX[i] = currentX[i];
+                    previousY[i] = currentY[i];
+                    currentX[i] = e.getX(i);
+                    currentY[i] = e.getY(i);
+                }
+
+                if (touchCount == 1) {
+
+
+                }
+
+                else if (touchCount == 2) {
+                    float prevX = previousX[0] - previousX[1];
+                    float prevY = previousY[0] - previousY[1];
+                    float currX = currentX[0] - currentX[1];
+                    float currY = currentY[0] - currentY[1];
+
+                    float pre = (float) (Math.pow(prevX, 2.0f) + Math.pow(prevY, 2.0f));
+                    float cur = (float) (Math.pow(currX, 2.0f) + Math.pow(currY, 2.0f));
+
+                    if (pre - cur > 0)
+                        fovy = Math.min(75.0f, fovy + 5.0f);
+
+                    else
+                        fovy = Math.max(15.0f, fovy - 5.0f);
+
+                    mRenderer.cam_zoom(fovy);
+                }
+
+                else if (touchCount == 3) {
+                    float distX = 0;
+                    float distY = 0;
+
+                    for (int i = 0; i < touchCount; i++) {
+                        distX += currentX[i] - previousX[i];
+                        distY += currentY[i] - previousY[i];
+                    }
+
+                    float angleX = 0.5f;
+                    if (distX < 0)
+                        angleX *= -1;
+
+                    float angleY = 0.5f;
+                    if (distY < 0)
+                        angleY *= -1;
+
+                    mRenderer.cam_rotation(angleX, angleY);
+                }
+
                 break;
         }
         return true;

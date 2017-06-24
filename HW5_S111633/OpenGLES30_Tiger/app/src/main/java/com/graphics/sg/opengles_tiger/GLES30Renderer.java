@@ -215,4 +215,26 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
     public void setLight1() {
         mPhongShadingProgram.light[1].light_on = 1 - mPhongShadingProgram.light[1].light_on;
     }
+
+    public void cam_move(float[] distance) {
+        float[] mTmpMatrix = new float[16];
+        Matrix.setIdentityM(mTmpMatrix, 0);
+
+        Matrix.translateM(mTmpMatrix, 0, distance[0], distance[1], distance[2]);
+        Matrix.multiplyMM(mViewMatrix, 0, mTmpMatrix, 0 ,mViewMatrix, 0);
+        Matrix.multiplyMM(mViewMatrix, 0, mTmpMatrix, 0 ,mViewMatrix, 0);
+    }
+
+    public void cam_zoom(float new_fovy) {
+        fovy = new_fovy;
+    }
+
+    public void cam_rotation(float angleX, float angleY) {
+        float[] mTmpMatrix = new float[16];
+        Matrix.setIdentityM(mTmpMatrix, 0);
+
+        Matrix.rotateM(mTmpMatrix, 0, angleX, 0.0f, 1.0f, 0.0f);
+        Matrix.rotateM(mTmpMatrix, 0, angleY, 1.0f, 0.0f, 0.0f);
+        Matrix.multiplyMM(mViewMatrix, 0, mTmpMatrix, 0 ,mViewMatrix, 0);
+    }
 }
