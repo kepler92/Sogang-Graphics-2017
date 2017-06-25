@@ -206,8 +206,8 @@ public class PhongShadingProgram extends GLES30Program{
         materialOptimus.emissive_color[2] = 0.1f;
         materialOptimus.emissive_color[3] = 1.0f;
 
-        materialDragon.ambient_color[0] = 0.6518667432914536f;
-        materialDragon.ambient_color[1] = 0.4015444729948403f;
+        materialDragon.ambient_color[0] = 0.0518667432914536f;
+        materialDragon.ambient_color[1] = 0.0015444729948403f;
         materialDragon.ambient_color[2] = 0.6460670418716485f;
         materialDragon.ambient_color[3] = 1.0f;
         materialDragon.diffuse_color[0] = 0.8445436346508925f;

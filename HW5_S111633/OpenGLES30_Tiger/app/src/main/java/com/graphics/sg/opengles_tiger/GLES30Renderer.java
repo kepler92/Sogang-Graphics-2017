@@ -49,6 +49,11 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
     final static int TEXTURE_ID_SQUARE = 6;
 
 
+    public int mDragon_PathNow = 0;
+    public int mDragon_PathStamp = 0;
+    public float[][] mDragon_Path = new float[4][2];
+
+
     // OpenGL Handles
     private PhongShadingProgram mPhongShadingProgram;
     private SimpleProgram mSimpleProgram;
@@ -109,30 +114,41 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         mTiger.prepare();
         mTiger.setTexture(AssetReader.getBitmapFromFile("tiger_tex.jpg", mContext), TEXTURE_ID_TIGER);
 
+
         // Optimus 오브젝트 로드
         mOptimus = new Objects();
         mOptimus.addGeometry(AssetReader.readGeometry("optimus_vnt.geom", nBytesPerTriangles, mContext));
         mOptimus.prepare();
+        mOptimus.setTexture(AssetReader.getBitmapFromFile("texture3.jpg", mContext), TEXTURE_ID_OPTIMUS);
 
         // Dragon 오브젝트 로드
         mDragon = new Objects();
         mDragon.addGeometry(AssetReader.readGeometry("dragon_vnt.geom", nBytesPerTriangles, mContext));
         mDragon.prepare();
+        mDragon.setTexture(AssetReader.getBitmapFromFile("texture1.jpg", mContext), TEXTURE_ID_DRAGON);
 
         // Cow 오브젝트 로드
         mCow = new Objects();
         mCow.addGeometry(AssetReader.readGeometry("Cow_triangles_vn.geom", nBytesPerTriangles, mContext));
         mCow.prepare();
+        mCow.setTexture(AssetReader.getBitmapFromFile("texture2.jpg", mContext), TEXTURE_ID_COW);
 
         // Car 오브젝트 로드
         mCar = new Objects();
         mCar.addGeometry(AssetReader.readGeometry("Car_triangles_vnt.geom", nBytesPerTriangles, mContext));
         mCar.prepare();
+        mCar.setTexture(AssetReader.getBitmapFromFile("texture4.jpg", mContext), TEXTURE_ID_CAR);
 
-        // Car 오브젝트 로드
+        // Square 오브젝트 로드
         mSquare = new Objects();
         mSquare.addGeometry(AssetReader.readGeometry("Square16_triangles_vnt.geom", nBytesPerTriangles, mContext));
         mSquare.prepare();
+
+        // Dragon Path 설정
+        mDragon_Path[0][0] = -250.0f; mDragon_Path[0][1] = 250.0f;
+        mDragon_Path[1][0] = 250.0f; mDragon_Path[1][1] = 250.0f;
+        mDragon_Path[2][0] = 250.0f; mDragon_Path[2][1] = -250.0f;
+        mDragon_Path[3][0] = -250.0f; mDragon_Path[3][1] = -250.0f;
     }
 
     @Override
@@ -142,7 +158,9 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
 
         cur_frame_tiger = timestamp % N_TIGER_FRAMES;
         rotation_angle_tiger = timestamp % 360;
-        float optimus_height = (float) Math.abs(Math.sin((timestamp / 50.0f) % 360));
+
+        float slow_timestamp = (timestamp / 50.0f);
+        float optimus_height = (float) Math.abs(Math.sin(slow_timestamp % 360));
 
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
@@ -182,7 +200,8 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
 
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mFloor.mTexId[0]);
-        GLES30.glUniform1i(mPhongShadingProgram.locTexture, 1);
+        //GLES30.glUniform1i(mPhongShadingProgram.locTexture, 1);
+        GLES30.glUniform1i(mPhongShadingProgram.locTexture, TEXTURE_ID_FLOOR);
 
         mPhongShadingProgram.setUpMaterialFloor();
         mFloor.draw();
@@ -201,7 +220,9 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
 
-        GLES30.glUniform1i(mPhongShadingProgram.locFlagTextureMapping, 0);
+        //GLES30.glUniform1i(mPhongShadingProgram.locFlagTextureMapping, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTiger.mTexId[0]);
+        GLES30.glUniform1i(mPhongShadingProgram.locTexture, TEXTURE_ID_TIGER);
 
         mPhongShadingProgram.setUpMaterialTiger();
         mTiger.draw(cur_frame_tiger);
@@ -255,11 +276,10 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
             mCow.draw(0);
         }
 
-
         // Optimus
         Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.rotateM(mModelMatrix, 0, -rotation_angle_tiger, 0f, 1f, 0f);
         Matrix.translateM(mModelMatrix, 0, 0.0f, 10.0f + optimus_height * 100, 0.0f);
+        Matrix.rotateM(mModelMatrix, 0, -rotation_angle_tiger, 0f, 1f, 0f);
         Matrix.rotateM(mModelMatrix, 0, -90.0f, 1.0f, 0.0f, 0.0f);
         Matrix.scaleM(mModelMatrix, 0, 0.2f, 0.2f, 0.2f);
         Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
@@ -276,6 +296,97 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
 
         mPhongShadingProgram.setUpMaterialOptimus();
         mOptimus.draw(0);
+
+        // Dragon
+        Matrix.setIdentityM(mModelMatrix, 0);
+
+        float dragon_x = 0;
+        float dragon_z = 0;
+        float dragon_speed = 3.0f;
+
+        if(mDragon_PathNow == 0) {
+            dragon_x = mDragon_Path[0][0] + dragon_speed * (timestamp - mDragon_PathStamp);
+            dragon_z = mDragon_Path[0][1];
+
+            if (dragon_x > 250.0f) {
+                mDragon_PathNow = 1;
+                mDragon_PathStamp = timestamp;
+                dragon_x = mDragon_Path[1][0];
+            }
+        }
+
+        else if(mDragon_PathNow == 1) {
+            dragon_x = mDragon_Path[1][0];
+            dragon_z = mDragon_Path[1][1] -  dragon_speed * (timestamp - mDragon_PathStamp);
+
+            if (dragon_z < -250.0f) {
+                mDragon_PathNow = 2;
+                mDragon_PathStamp = timestamp;
+                dragon_z = mDragon_Path[2][1];
+            }
+        }
+
+        else if(mDragon_PathNow == 2) {
+            dragon_x = mDragon_Path[2][0] - dragon_speed * (timestamp - mDragon_PathStamp);
+            dragon_z = mDragon_Path[2][1];
+
+            if (dragon_x < -250.0f) {
+                mDragon_PathNow = 3;
+                mDragon_PathStamp = timestamp;
+                dragon_x = mDragon_Path[3][0];
+            }
+        }
+
+        else if(mDragon_PathNow == 3) {
+            dragon_x = mDragon_Path[3][0];
+            dragon_z = mDragon_Path[3][1] + dragon_speed * (timestamp - mDragon_PathStamp);
+
+            if (dragon_z > 250.0f) {
+                mDragon_PathNow = 0;
+                mDragon_PathStamp = timestamp;
+                dragon_z = mDragon_Path[0][0];
+            }
+        }
+
+        Matrix.translateM(mModelMatrix, 0, dragon_x, 100.0f, dragon_z);
+        Matrix.rotateM(mModelMatrix, 0, 90.0f * mDragon_PathNow, 0.0f, 1.0f, 0.0f);
+
+        Matrix.rotateM(mModelMatrix, 0, -90.0f, 1.0f, 0.0f, 0.0f);
+        Matrix.scaleM(mModelMatrix, 0, 7.0f, 7.0f, 7.0f);
+        Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
+        Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
+        Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mDragon.mTexId[0]);
+        GLES30.glUniform1i(mPhongShadingProgram.locTexture, TEXTURE_ID_DRAGON);
+
+        mPhongShadingProgram.setUpMaterialDragon();
+        mDragon.draw(0);
+
+        Matrix.setIdentityM(mModelMatrix, 0);
+        //Matrix.rotateM(mModelMatrix, 0, rotation_angle_tiger, 0f, 1f, 0f);
+        Matrix.translateM(mModelMatrix, 0, 100.0f, 10.0f, 100.0f);
+        //Matrix.rotateM(mModelMatrix, 0, 90.0f, 0.0f, 1.0f, 0.0f);
+        Matrix.scaleM(mModelMatrix, 0, 15.0f, 15.0f, 15.0f);
+        Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
+        Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
+        Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mCar.mTexId[0]);
+        GLES30.glUniform1i(mPhongShadingProgram.locTexture, TEXTURE_ID_CAR);
+
+        mPhongShadingProgram.setUpMaterialCar();
+        mCar.draw(0);
 
 
         mSimpleProgram.use();
