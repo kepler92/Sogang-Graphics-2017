@@ -3,7 +3,9 @@ package com.graphics.sg.opengles_tiger;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -26,6 +28,21 @@ public class MainActivity extends AppCompatActivity{
     private float[] currentY = {0, 0, 0};
     private float fovy = 45.0f;
 
+    int view_width = 0;
+    int view_height = 0;
+    float view_centerX, view_centerY;
+
+    /*
+    if (view_width == 0 && view_width == 0) {
+        View linearLayout = (View) this.findViewById(R.id.surface_view);
+        view_width = linearLayout.getWidth();
+        view_height = linearLayout.getHeight();
+
+        view_centerX = view_width / 2.0f;
+        view_centerY = view_height / 2.0f;
+    }
+    */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +60,7 @@ public class MainActivity extends AppCompatActivity{
         mCheckBoxFog.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mRenderer.toggleTexture(TYPE_FOG, isChecked);
+                 mRenderer.toggleTexture(TYPE_FOG, isChecked);
             }
         });
 
@@ -123,8 +140,16 @@ public class MainActivity extends AppCompatActivity{
                 }
 
                 if (touchCount == 1) {
+                    float pointX = currentX[0] - previousX[0];
+                    float pointY = currentY[0] - previousY[0];
 
+                    float x = 3.0f;
+                    if(pointX < 0) x *= -1;
 
+                    float y = 3.0f;
+                    if(pointY < 0) y *= -1;
+
+                    mRenderer.cam_move(x, 0, y);
                 }
 
                 else if (touchCount == 2) {
@@ -137,7 +162,7 @@ public class MainActivity extends AppCompatActivity{
                     float cur = (float) (Math.pow(currX, 2.0f) + Math.pow(currY, 2.0f));
 
                     if (pre - cur > 0)
-                        fovy = Math.min(75.0f, fovy + 5.0f);
+                        fovy = Math.min(150.0f, fovy + 5.0f);
 
                     else
                         fovy = Math.max(15.0f, fovy - 5.0f);
@@ -155,12 +180,10 @@ public class MainActivity extends AppCompatActivity{
                     }
 
                     float angleX = 0.5f;
-                    if (distX < 0)
-                        angleX *= -1;
+                    if (distX < 0) angleX *= -1;
 
                     float angleY = 0.5f;
-                    if (distY < 0)
-                        angleY *= -1;
+                    if (distY < 0) angleY *= -1;
 
                     mRenderer.cam_rotation(angleX, angleY);
                 }

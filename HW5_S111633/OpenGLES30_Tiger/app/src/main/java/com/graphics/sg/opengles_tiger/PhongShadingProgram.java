@@ -59,6 +59,12 @@ public class PhongShadingProgram extends GLES30Program{
     MaterialParameters materialFloor = new MaterialParameters();
     MaterialParameters materialTiger = new MaterialParameters();
 
+    MaterialParameters materialOptimus = new MaterialParameters();
+    MaterialParameters materialDragon = new MaterialParameters();
+    MaterialParameters materialCow = new MaterialParameters();
+    MaterialParameters materialCar = new MaterialParameters();
+    MaterialParameters materialSquare = new MaterialParameters();
+
     public PhongShadingProgram(String vertexShaderCode, String fragmentShaderCode) {
         super(vertexShaderCode, fragmentShaderCode);
     }
@@ -180,6 +186,97 @@ public class PhongShadingProgram extends GLES30Program{
         materialTiger.emissive_color[1] = 0.1f;
         materialTiger.emissive_color[2] = 0.0f;
         materialTiger.emissive_color[3] = 1.0f;
+
+
+        materialOptimus.ambient_color[0] = 0.14126315452214389f;
+        materialOptimus.ambient_color[1] = 0.7156540575502911f;
+        materialOptimus.ambient_color[2] = 0.5966332809701865f;
+        materialOptimus.ambient_color[3] = 1.0f;
+        materialOptimus.diffuse_color[0] = 0.2549612779049665f;
+        materialOptimus.diffuse_color[1] = 0.13972499441130348f;
+        materialOptimus.diffuse_color[2] = 0.8841817085890357f;
+        materialOptimus.diffuse_color[3] = 1.0f;
+        materialOptimus.specular_color[0] = 0.3957942081411028f;
+        materialOptimus.specular_color[1] = 0.5020279726524615f;
+        materialOptimus.specular_color[2] = 0.5243016053476013f;
+        materialOptimus.specular_color[3] = 1.0f;
+        materialOptimus.specular_exponent = 96.3f;
+        materialOptimus.emissive_color[0] = 0.1f;
+        materialOptimus.emissive_color[1] = 0.1f;
+        materialOptimus.emissive_color[2] = 0.1f;
+        materialOptimus.emissive_color[3] = 1.0f;
+
+        materialDragon.ambient_color[0] = 0.6518667432914536f;
+        materialDragon.ambient_color[1] = 0.4015444729948403f;
+        materialDragon.ambient_color[2] = 0.6460670418716485f;
+        materialDragon.ambient_color[3] = 1.0f;
+        materialDragon.diffuse_color[0] = 0.8445436346508925f;
+        materialDragon.diffuse_color[1] = 0.4885641504435906f;
+        materialDragon.diffuse_color[2] = 0.7649066068390078f;
+        materialDragon.diffuse_color[3] = 1.0f;
+        materialDragon.specular_color[0] = 0.7758803202254273f;
+        materialDragon.specular_color[1] = 0.06550478969993179f;
+        materialDragon.specular_color[2] = 0.9620346537422159f;
+        materialDragon.specular_color[3] = 1.0f;
+        materialDragon.specular_exponent = 3.1f;
+        materialDragon.emissive_color[0] = 0.1f;
+        materialDragon.emissive_color[1] = 0.1f;
+        materialDragon.emissive_color[2] = 0.1f;
+        materialDragon.emissive_color[3] = 1.0f;
+
+        materialCow.ambient_color[0] = 0.7210726525991409f;
+        materialCow.ambient_color[1] = 0.356063829161412f;
+        materialCow.ambient_color[2] = 0.5854278450572166f;
+        materialCow.ambient_color[3] = 1.0f;
+        materialCow.diffuse_color[0] = 0.1936684088915186f;
+        materialCow.diffuse_color[1] = 0.2217623791958626f;
+        materialCow.diffuse_color[2] = 0.06649109054662494f;
+        materialCow.diffuse_color[3] = 1.0f;
+        materialCow.specular_color[0] = 0.7417657738733074f;
+        materialCow.specular_color[1] = 0.46940868448348894f;
+        materialCow.specular_color[2] = 0.6410139266514381f;
+        materialCow.specular_color[3] = 1.0f;
+        materialCow.specular_exponent = 26.4f;
+        materialCow.emissive_color[0] = 0.1f;
+        materialCow.emissive_color[1] = 0.1f;
+        materialCow.emissive_color[2] = 0.1f;
+        materialCow.emissive_color[3] = 1.0f;
+
+        materialCar.ambient_color[0] = 0.38177412066045f;
+        materialCar.ambient_color[1] = 0.06547722609113193f;
+        materialCar.ambient_color[2] = 0.4940854706613922f;
+        materialCar.ambient_color[3] = 1.0f;
+        materialCar.diffuse_color[0] = 0.6604701197981685f;
+        materialCar.diffuse_color[1] = 0.8002496572209964f;
+        materialCar.diffuse_color[2] = 0.8401393045339253f;
+        materialCar.diffuse_color[3] = 1.0f;
+        materialCar.specular_color[0] = 0.39764815484445115f;
+        materialCar.specular_color[1] = 0.8294460724356704f;
+        materialCar.specular_color[2] = 0.8911893617205143f;
+        materialCar.specular_color[3] = 1.0f;
+        materialCar.specular_exponent = 63.6f;
+        materialCar.emissive_color[0] = 0.1f;
+        materialCar.emissive_color[1] = 0.1f;
+        materialCar.emissive_color[2] = 0.1f;
+        materialCar.emissive_color[3] = 1.0f;
+
+        materialSquare.ambient_color[0] = 0.2312417264713289f;
+        materialSquare.ambient_color[1] = 0.9095013503983488f;
+        materialSquare.ambient_color[2] = 0.7958159672895821f;
+        materialSquare.ambient_color[3] = 1.0f;
+        materialSquare.diffuse_color[0] = 0.8308121551913812f;
+        materialSquare.diffuse_color[1] = 0.13313320639794524f;
+        materialSquare.diffuse_color[2] = 0.12539714930010548f;
+        materialSquare.diffuse_color[3] = 1.0f;
+        materialSquare.specular_color[0] = 0.3532509827049185f;
+        materialSquare.specular_color[1] = 0.20854495273645368f;
+        materialSquare.specular_color[2] = 0.44033743000881576f;
+        materialSquare.specular_color[3] = 1.0f;
+        materialSquare.specular_exponent = 79.0f;
+        materialSquare.emissive_color[0] = 0.1f;
+        materialSquare.emissive_color[1] = 0.1f;
+        materialSquare.emissive_color[2] = 0.1f;
+        materialSquare.emissive_color[3] = 1.0f;
     }
 
     public void initFlags() {
@@ -282,6 +379,48 @@ public class PhongShadingProgram extends GLES30Program{
         GLES30.glUniform1f(locMaterial.specular_exponent, materialTiger.specular_exponent);
         GLES30.glUniform4fv(locMaterial.emissive_color, 1, BufferConverter.floatArrayToBuffer(materialTiger.emissive_color));
     }
+
+
+    public void setUpMaterialOptimus() {
+        GLES30.glUniform4fv(locMaterial.ambient_color, 1, BufferConverter.floatArrayToBuffer(materialOptimus.ambient_color));
+        GLES30.glUniform4fv(locMaterial.diffuse_color, 1, BufferConverter.floatArrayToBuffer(materialOptimus.diffuse_color));
+        GLES30.glUniform4fv(locMaterial.specular_color, 1, BufferConverter.floatArrayToBuffer(materialOptimus.specular_color));
+        GLES30.glUniform1f(locMaterial.specular_exponent, materialOptimus.specular_exponent);
+        GLES30.glUniform4fv(locMaterial.emissive_color, 1, BufferConverter.floatArrayToBuffer(materialOptimus.emissive_color));
+    }
+
+    public void setUpMaterialDragon() {
+        GLES30.glUniform4fv(locMaterial.ambient_color, 1, BufferConverter.floatArrayToBuffer(materialDragon.ambient_color));
+        GLES30.glUniform4fv(locMaterial.diffuse_color, 1, BufferConverter.floatArrayToBuffer(materialDragon.diffuse_color));
+        GLES30.glUniform4fv(locMaterial.specular_color, 1, BufferConverter.floatArrayToBuffer(materialDragon.specular_color));
+        GLES30.glUniform1f(locMaterial.specular_exponent, materialDragon.specular_exponent);
+        GLES30.glUniform4fv(locMaterial.emissive_color, 1, BufferConverter.floatArrayToBuffer(materialDragon.emissive_color));
+    }
+
+    public void setUpMaterialCow() {
+        GLES30.glUniform4fv(locMaterial.ambient_color, 1, BufferConverter.floatArrayToBuffer(materialCow.ambient_color));
+        GLES30.glUniform4fv(locMaterial.diffuse_color, 1, BufferConverter.floatArrayToBuffer(materialCow.diffuse_color));
+        GLES30.glUniform4fv(locMaterial.specular_color, 1, BufferConverter.floatArrayToBuffer(materialCow.specular_color));
+        GLES30.glUniform1f(locMaterial.specular_exponent, materialCow.specular_exponent);
+        GLES30.glUniform4fv(locMaterial.emissive_color, 1, BufferConverter.floatArrayToBuffer(materialCow.emissive_color));
+    }
+
+    public void setUpMaterialCar() {
+        GLES30.glUniform4fv(locMaterial.ambient_color, 1, BufferConverter.floatArrayToBuffer(materialCar.ambient_color));
+        GLES30.glUniform4fv(locMaterial.diffuse_color, 1, BufferConverter.floatArrayToBuffer(materialCar.diffuse_color));
+        GLES30.glUniform4fv(locMaterial.specular_color, 1, BufferConverter.floatArrayToBuffer(materialCar.specular_color));
+        GLES30.glUniform1f(locMaterial.specular_exponent, materialCar.specular_exponent);
+        GLES30.glUniform4fv(locMaterial.emissive_color, 1, BufferConverter.floatArrayToBuffer(materialCar.emissive_color));
+    }
+
+    public void setUpMaterialSquare() {
+        GLES30.glUniform4fv(locMaterial.ambient_color, 1, BufferConverter.floatArrayToBuffer(materialSquare.ambient_color));
+        GLES30.glUniform4fv(locMaterial.diffuse_color, 1, BufferConverter.floatArrayToBuffer(materialSquare.diffuse_color));
+        GLES30.glUniform4fv(locMaterial.specular_color, 1, BufferConverter.floatArrayToBuffer(materialSquare.specular_color));
+        GLES30.glUniform1f(locMaterial.specular_exponent, materialSquare.specular_exponent);
+        GLES30.glUniform4fv(locMaterial.emissive_color, 1, BufferConverter.floatArrayToBuffer(materialSquare.emissive_color));
+    }
+
 
     public void set_lights1() {
         GLES30.glUseProgram(mId);

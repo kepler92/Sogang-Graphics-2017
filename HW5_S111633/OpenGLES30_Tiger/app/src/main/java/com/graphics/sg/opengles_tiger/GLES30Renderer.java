@@ -17,6 +17,12 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
     private Floor mFloor;
     private Tiger mTiger;
 
+    private Objects mOptimus;
+    private Objects mDragon;
+    private Objects mCow;
+    private Objects mCar;
+    private Objects mSquare;
+
     public float fovy = 45.0f;
     public float ratio = 1.0f;
 
@@ -35,6 +41,13 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
     // Texture
     final static int TEXTURE_ID_FLOOR = 0;
     final static int TEXTURE_ID_TIGER = 1;
+
+    final static int TEXTURE_ID_OPTIMUS = 2;
+    final static int TEXTURE_ID_DRAGON = 3;
+    final static int TEXTURE_ID_COW = 4;
+    final static int TEXTURE_ID_CAR = 5;
+    final static int TEXTURE_ID_SQUARE = 6;
+
 
     // OpenGL Handles
     private PhongShadingProgram mPhongShadingProgram;
@@ -95,6 +108,31 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         }
         mTiger.prepare();
         mTiger.setTexture(AssetReader.getBitmapFromFile("tiger_tex.jpg", mContext), TEXTURE_ID_TIGER);
+
+        // Optimus 오브젝트 로드
+        mOptimus = new Objects();
+        mOptimus.addGeometry(AssetReader.readGeometry("optimus_vnt.geom", nBytesPerTriangles, mContext));
+        mOptimus.prepare();
+
+        // Dragon 오브젝트 로드
+        mDragon = new Objects();
+        mDragon.addGeometry(AssetReader.readGeometry("dragon_vnt.geom", nBytesPerTriangles, mContext));
+        mDragon.prepare();
+
+        // Cow 오브젝트 로드
+        mCow = new Objects();
+        mCow.addGeometry(AssetReader.readGeometry("Cow_triangles_vn.geom", nBytesPerTriangles, mContext));
+        mCow.prepare();
+
+        // Car 오브젝트 로드
+        mCar = new Objects();
+        mCar.addGeometry(AssetReader.readGeometry("Car_triangles_vnt.geom", nBytesPerTriangles, mContext));
+        mCar.prepare();
+
+        // Car 오브젝트 로드
+        mSquare = new Objects();
+        mSquare.addGeometry(AssetReader.readGeometry("Square16_triangles_vnt.geom", nBytesPerTriangles, mContext));
+        mSquare.prepare();
     }
 
     @Override
@@ -104,6 +142,7 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
 
         cur_frame_tiger = timestamp % N_TIGER_FRAMES;
         rotation_angle_tiger = timestamp % 360;
+        float optimus_height = (float) Math.abs(Math.sin((timestamp / 50.0f) % 360));
 
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
@@ -167,6 +206,78 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         mPhongShadingProgram.setUpMaterialTiger();
         mTiger.draw(cur_frame_tiger);
 
+
+        // Cow
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.rotateM(mModelMatrix, 0, rotation_angle_tiger, 0f, 1f, 0f);
+        Matrix.translateM(mModelMatrix, 0, 50.0f, 50.0f, 0.0f);
+        Matrix.rotateM(mModelMatrix, 0, 90.0f, 0.0f, 1.0f, 0.0f);
+        Matrix.scaleM(mModelMatrix, 0, 100.0f, 100.0f, 100.0f);
+        Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
+        Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
+        Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mCow.mTexId[0]);
+        GLES30.glUniform1i(mPhongShadingProgram.locTexture, TEXTURE_ID_COW);
+
+        mPhongShadingProgram.setUpMaterialCow();
+        mCow.draw(0);
+
+        // Cow_Tree
+        for (int i = -1; i <= 1; i++) {
+            float[] mModelMatrixSamllCow = new float[16];
+            System.arraycopy(mModelMatrix, 0, mModelMatrixSamllCow, 0, mModelMatrix.length);
+
+            Matrix.scaleM(mModelMatrixSamllCow, 0 , 0.01f, 0.01f, 0.01f);
+            Matrix.rotateM(mModelMatrixSamllCow, 0, (120.0f * i + 90.0f) % 360, 0.0f, 1.0f, 0.0f);
+            Matrix.translateM(mModelMatrixSamllCow, 0, 0.0f, 0.0f, 70.0f);
+            Matrix.rotateM(mModelMatrixSamllCow, 0, (-90.0f -120.0f * i) % 360, 0.0f, 1.0f, 0.0f);
+            Matrix.scaleM(mModelMatrixSamllCow, 0 ,50.0f, 50.0f, 50.0f);
+
+            Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrixSamllCow, 0);
+            Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
+            Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
+            Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+            GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
+            GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
+            GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
+
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mCow.mTexId[0]);
+            GLES30.glUniform1i(mPhongShadingProgram.locTexture, TEXTURE_ID_COW);
+
+            mPhongShadingProgram.setUpMaterialCow();
+            mCow.draw(0);
+        }
+
+
+        // Optimus
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.rotateM(mModelMatrix, 0, -rotation_angle_tiger, 0f, 1f, 0f);
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 10.0f + optimus_height * 100, 0.0f);
+        Matrix.rotateM(mModelMatrix, 0, -90.0f, 1.0f, 0.0f, 0.0f);
+        Matrix.scaleM(mModelMatrix, 0, 0.2f, 0.2f, 0.2f);
+        Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
+        Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
+        Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mOptimus.mTexId[0]);
+        GLES30.glUniform1i(mPhongShadingProgram.locTexture, TEXTURE_ID_OPTIMUS);
+
+        mPhongShadingProgram.setUpMaterialOptimus();
+        mOptimus.draw(0);
+
+
         mSimpleProgram.use();
         pId = mSimpleProgram.getProgramID();
 
@@ -216,14 +327,16 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         mPhongShadingProgram.light[1].light_on = 1 - mPhongShadingProgram.light[1].light_on;
     }
 
-    public void cam_move(float[] distance) {
+    public void cam_move(float x, float y, float z) {
         float[] mTmpMatrix = new float[16];
         Matrix.setIdentityM(mTmpMatrix, 0);
 
-        Matrix.translateM(mTmpMatrix, 0, distance[0], distance[1], distance[2]);
+        Matrix.translateM(mTmpMatrix, 0, x, y, z);
         Matrix.multiplyMM(mViewMatrix, 0, mTmpMatrix, 0 ,mViewMatrix, 0);
         Matrix.multiplyMM(mViewMatrix, 0, mTmpMatrix, 0 ,mViewMatrix, 0);
     }
+
+    public void cam_move(float x, float y) { cam_move(x, y, 0.0f); }
 
     public void cam_zoom(float new_fovy) {
         fovy = new_fovy;

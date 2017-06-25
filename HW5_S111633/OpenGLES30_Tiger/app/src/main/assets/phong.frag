@@ -72,7 +72,8 @@ vec4 lighting_equation_textured(in vec3 P_eye, in vec3 N_eye, in vec4 base_color
 				vec3 spot_dir = normalize(light[i].spot_direction);
 
 				tmp_float = dot(-L_eye, spot_dir);
-				if (tmp_float >= cos(radians(light[i].spot_cutoff_angle))) {
+				//if (tmp_float >= cos(radians(light[i].spot_cutoff_angle))) {
+				if (tmp_float >= cos(radians(spot_cutoff_angle))) {
 					tmp_float = pow(tmp_float, light[i].spot_exponent);
 				}
 				else
