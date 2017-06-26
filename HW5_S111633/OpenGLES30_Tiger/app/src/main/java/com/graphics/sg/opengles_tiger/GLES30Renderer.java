@@ -52,6 +52,7 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
     public int mDragon_PathNow = 0;
     public int mDragon_PathStamp = 0;
     public float[][] mDragon_Path = new float[4][2];
+    public float[] mLightMatrix = new float[16];
 
 
     // OpenGL Handles
@@ -151,6 +152,61 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         mDragon_Path[3][0] = -250.0f; mDragon_Path[3][1] = -250.0f;
     }
 
+
+    private float[] dragonPosition(int timestamp) {
+        float dragon_x = 0;
+        float dragon_z = 0;
+        float dragon_speed = 3.0f;
+
+        if(mDragon_PathNow == 0) {
+            dragon_x = mDragon_Path[0][0] + dragon_speed * (timestamp - mDragon_PathStamp);
+            dragon_z = mDragon_Path[0][1];
+
+            if (dragon_x > 250.0f) {
+                mDragon_PathNow = 1;
+                mDragon_PathStamp = timestamp;
+                dragon_x = mDragon_Path[1][0];
+            }
+        }
+
+        else if(mDragon_PathNow == 1) {
+            dragon_x = mDragon_Path[1][0];
+            dragon_z = mDragon_Path[1][1] -  dragon_speed * (timestamp - mDragon_PathStamp);
+
+            if (dragon_z < -250.0f) {
+                mDragon_PathNow = 2;
+                mDragon_PathStamp = timestamp;
+                dragon_z = mDragon_Path[2][1];
+            }
+        }
+
+        else if(mDragon_PathNow == 2) {
+            dragon_x = mDragon_Path[2][0] - dragon_speed * (timestamp - mDragon_PathStamp);
+            dragon_z = mDragon_Path[2][1];
+
+            if (dragon_x < -250.0f) {
+                mDragon_PathNow = 3;
+                mDragon_PathStamp = timestamp;
+                dragon_x = mDragon_Path[3][0];
+            }
+        }
+
+        else if(mDragon_PathNow == 3) {
+            dragon_x = mDragon_Path[3][0];
+            dragon_z = mDragon_Path[3][1] + dragon_speed * (timestamp - mDragon_PathStamp);
+
+            if (dragon_z > 250.0f) {
+                mDragon_PathNow = 0;
+                mDragon_PathStamp = timestamp;
+                dragon_z = mDragon_Path[0][0];
+            }
+        }
+
+        float[] pos = {dragon_x, 100.0f, dragon_z};
+        return pos;
+    }
+
+
     @Override
     public void onDrawFrame(GL10 gl) {
         int pId;
@@ -164,7 +220,8 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
 
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
-        mPhongShadingProgram.set_lights1();
+        //mPhongShadingProgram.set_lights1();
+        mPhongShadingProgram.set_lights3(mLightMatrix);
         Matrix.perspectiveM(mProjectionMatrix, 0, fovy, ratio, 0.1f, 2000.0f);
 
         // Simple Program을 이용해서 축을 그린다.
@@ -186,7 +243,7 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         GLES30.glUniform1i(mPhongShadingProgram.locFlagTextureMapping, mPhongShadingProgram.mFlagTextureMapping);
 
         // Model Matrix 설정.
-        Matrix.setIdentityM(mModelMatrix, 0);
+        /*Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.translateM(mModelMatrix, 0, -250f, 0f, 250f);
         Matrix.scaleM(mModelMatrix, 0, 500f, 500f, 500f);
         Matrix.rotateM(mModelMatrix, 0, -90.0f, 1f, 0f, 0f);
@@ -200,11 +257,10 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
 
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mFloor.mTexId[0]);
-        //GLES30.glUniform1i(mPhongShadingProgram.locTexture, 1);
-        GLES30.glUniform1i(mPhongShadingProgram.locTexture, TEXTURE_ID_FLOOR);
+        GLES30.glUniform1i(mPhongShadingProgram.locTexture, 1);
 
         mPhongShadingProgram.setUpMaterialFloor();
-        mFloor.draw();
+        mFloor.draw();*/
 
         // Tiger 그리기 영역.
         Matrix.setIdentityM(mModelMatrix, 0);
@@ -215,6 +271,8 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
         Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
         Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+        mLightMatrix = mModelViewMatrix;
 
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
@@ -298,59 +356,11 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         mOptimus.draw(0);
 
         // Dragon
+        float[] dragon_pos = dragonPosition(timestamp);
+
         Matrix.setIdentityM(mModelMatrix, 0);
-
-        float dragon_x = 0;
-        float dragon_z = 0;
-        float dragon_speed = 3.0f;
-
-        if(mDragon_PathNow == 0) {
-            dragon_x = mDragon_Path[0][0] + dragon_speed * (timestamp - mDragon_PathStamp);
-            dragon_z = mDragon_Path[0][1];
-
-            if (dragon_x > 250.0f) {
-                mDragon_PathNow = 1;
-                mDragon_PathStamp = timestamp;
-                dragon_x = mDragon_Path[1][0];
-            }
-        }
-
-        else if(mDragon_PathNow == 1) {
-            dragon_x = mDragon_Path[1][0];
-            dragon_z = mDragon_Path[1][1] -  dragon_speed * (timestamp - mDragon_PathStamp);
-
-            if (dragon_z < -250.0f) {
-                mDragon_PathNow = 2;
-                mDragon_PathStamp = timestamp;
-                dragon_z = mDragon_Path[2][1];
-            }
-        }
-
-        else if(mDragon_PathNow == 2) {
-            dragon_x = mDragon_Path[2][0] - dragon_speed * (timestamp - mDragon_PathStamp);
-            dragon_z = mDragon_Path[2][1];
-
-            if (dragon_x < -250.0f) {
-                mDragon_PathNow = 3;
-                mDragon_PathStamp = timestamp;
-                dragon_x = mDragon_Path[3][0];
-            }
-        }
-
-        else if(mDragon_PathNow == 3) {
-            dragon_x = mDragon_Path[3][0];
-            dragon_z = mDragon_Path[3][1] + dragon_speed * (timestamp - mDragon_PathStamp);
-
-            if (dragon_z > 250.0f) {
-                mDragon_PathNow = 0;
-                mDragon_PathStamp = timestamp;
-                dragon_z = mDragon_Path[0][0];
-            }
-        }
-
-        Matrix.translateM(mModelMatrix, 0, dragon_x, 100.0f, dragon_z);
+        Matrix.translateM(mModelMatrix, 0, dragon_pos[0], dragon_pos[1], dragon_pos[2]);
         Matrix.rotateM(mModelMatrix, 0, 90.0f * mDragon_PathNow, 0.0f, 1.0f, 0.0f);
-
         Matrix.rotateM(mModelMatrix, 0, -90.0f, 1.0f, 0.0f, 0.0f);
         Matrix.scaleM(mModelMatrix, 0, 7.0f, 7.0f, 7.0f);
         Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
@@ -368,6 +378,7 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         mPhongShadingProgram.setUpMaterialDragon();
         mDragon.draw(0);
 
+        // Car
         Matrix.setIdentityM(mModelMatrix, 0);
         //Matrix.rotateM(mModelMatrix, 0, rotation_angle_tiger, 0f, 1f, 0f);
         Matrix.translateM(mModelMatrix, 0, 100.0f, 10.0f, 100.0f);
@@ -387,6 +398,26 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
 
         mPhongShadingProgram.setUpMaterialCar();
         mCar.draw(0);
+
+        // Floor
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.translateM(mModelMatrix, 0, -250f, 0f, 250f);
+        Matrix.scaleM(mModelMatrix, 0, 500f, 500f, 500f);
+        Matrix.rotateM(mModelMatrix, 0, -90.0f, 1f, 0f, 0f);
+        Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
+        Matrix.invertM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
+        Matrix.transposeM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
+
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
+        GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mFloor.mTexId[0]);
+        GLES30.glUniform1i(mPhongShadingProgram.locTexture, TEXTURE_ID_FLOOR);
+
+        mPhongShadingProgram.setUpMaterialFloor();
+        mFloor.draw();
 
 
         mSimpleProgram.use();
