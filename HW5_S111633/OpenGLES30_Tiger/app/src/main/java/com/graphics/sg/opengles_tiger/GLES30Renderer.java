@@ -221,7 +221,6 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
         //mPhongShadingProgram.set_lights1();
-        mPhongShadingProgram.set_lights3(mLightMatrix);
         Matrix.perspectiveM(mProjectionMatrix, 0, fovy, ratio, 0.1f, 2000.0f);
 
         // Simple Program을 이용해서 축을 그린다.
@@ -272,8 +271,6 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
         Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
 
-        mLightMatrix = mModelViewMatrix;
-
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
@@ -309,16 +306,16 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
 
         // Cow_Tree
         for (int i = -1; i <= 1; i++) {
-            float[] mModelMatrixSamllCow = new float[16];
-            System.arraycopy(mModelMatrix, 0, mModelMatrixSamllCow, 0, mModelMatrix.length);
+            float[] mModelMatrixSmallCow = new float[16];
+            System.arraycopy(mModelMatrix, 0, mModelMatrixSmallCow, 0, mModelMatrix.length);
 
-            Matrix.scaleM(mModelMatrixSamllCow, 0 , 0.01f, 0.01f, 0.01f);
-            Matrix.rotateM(mModelMatrixSamllCow, 0, (120.0f * i + 90.0f) % 360, 0.0f, 1.0f, 0.0f);
-            Matrix.translateM(mModelMatrixSamllCow, 0, 0.0f, 0.0f, 70.0f);
-            Matrix.rotateM(mModelMatrixSamllCow, 0, (-90.0f -120.0f * i) % 360, 0.0f, 1.0f, 0.0f);
-            Matrix.scaleM(mModelMatrixSamllCow, 0 ,50.0f, 50.0f, 50.0f);
+            Matrix.scaleM(mModelMatrixSmallCow, 0 , 0.01f, 0.01f, 0.01f);
+            Matrix.rotateM(mModelMatrixSmallCow, 0, (120.0f * i + 90.0f) % 360, 0.0f, 1.0f, 0.0f);
+            Matrix.translateM(mModelMatrixSmallCow, 0, 0.0f, 0.0f, 70.0f);
+            Matrix.rotateM(mModelMatrixSmallCow, 0, (-90.0f -120.0f * i) % 360, 0.0f, 1.0f, 0.0f);
+            Matrix.scaleM(mModelMatrixSmallCow, 0 ,50.0f, 50.0f, 50.0f);
 
-            Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrixSamllCow, 0);
+            Matrix.multiplyMM(mModelViewMatrix, 0, mViewMatrix, 0, mModelMatrixSmallCow, 0);
             Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mModelViewMatrix, 0);
             Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
             Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
@@ -389,6 +386,8 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         Matrix.transposeM(mModelViewInvTrans, 0, mModelViewMatrix, 0);
         Matrix.invertM(mModelViewInvTrans, 0, mModelViewInvTrans, 0);
 
+        mLightMatrix = mModelViewMatrix;
+
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewProjectionMatrix, 1, false, mMVPMatrix, 0);
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrix, 1, false, mModelViewMatrix, 0);
         GLES30.glUniformMatrix4fv(mPhongShadingProgram.locModelViewMatrixInvTrans, 1, false, mModelViewInvTrans, 0);
@@ -424,8 +423,8 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
         pId = mSimpleProgram.getProgramID();
 
         // Axis 그리기 영역.
-        Matrix.scaleM(mMVPMatrix, 0, 20f, 20f, 20f);
-        mAxis.draw(pId, mMVPMatrix);
+        //Matrix.scaleM(mMVPMatrix, 0, 20f, 20f, 20f);
+        //mAxis.draw(pId, mMVPMatrix);
     }
 
     @Override
