@@ -220,7 +220,8 @@ public class GLES30Renderer implements GLSurfaceView.Renderer{
 
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
-        //mPhongShadingProgram.set_lights1();
+        mPhongShadingProgram.set_lights2(mViewMatrix, slow_timestamp);
+        mPhongShadingProgram.set_lights3(mViewMatrix);
         Matrix.perspectiveM(mProjectionMatrix, 0, fovy, ratio, 0.1f, 2000.0f);
 
         // Simple Program을 이용해서 축을 그린다.

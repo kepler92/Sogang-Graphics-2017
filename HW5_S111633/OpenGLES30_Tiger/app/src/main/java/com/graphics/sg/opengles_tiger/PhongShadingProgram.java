@@ -334,8 +334,8 @@ public class PhongShadingProgram extends GLES30Program{
 
 
         light[2].light_on = 1;
-        light[2].position[0] = 50.0f; light[2].position[1] = 100.0f;
-        light[2].position[2] = 50.0f; light[2].position[3] = 1.0f;
+        light[2].position[0] = 0.0f; light[2].position[1] = 500.0f;
+        light[2].position[2] = 0.0f; light[2].position[3] = 1.0f;
 
         light[2].ambient_color[0] = 0.152f; light[2].ambient_color[1] = 0.152f;
         light[2].ambient_color[2] = 0.152f; light[2].ambient_color[3] = 1.0f;
@@ -348,12 +348,12 @@ public class PhongShadingProgram extends GLES30Program{
 
         light[2].spot_direction[0] = 0.0f; light[2].spot_direction[1] = -1.0f;
         light[2].spot_direction[2] = 0.0f;
-        light[2].spot_cutoff_angle = 10.0f;
+        light[2].spot_cutoff_angle = 20.0f;
         light[2].spot_exponent = 8.0f;
 
         light[3].light_on = 1;
-        light[3].position[0] = 0.0f; light[3].position[1] = 0.0f;
-        light[3].position[2] = 0.0f; light[3].position[3] = 1.0f;
+        light[3].position[0] = 100.0f; light[3].position[1] = 20.0f;
+        light[3].position[2] = 150.0f; light[3].position[3] = 1.0f;
 
         light[3].ambient_color[0] = 0.2f; light[3].ambient_color[1] = 0.2f;
         light[3].ambient_color[2] = 0.2f; light[3].ambient_color[3] = 1.0f;
@@ -364,10 +364,10 @@ public class PhongShadingProgram extends GLES30Program{
         light[3].specular_color[0] = 0.82f; light[3].specular_color[1] = 0.82f;
         light[3].specular_color[2] = 0.82f; light[3].specular_color[3] = 1.0f;
 
-        light[3].spot_direction[0] = 0.0f; light[3].spot_direction[1] = 1.0f;
+        light[3].spot_direction[0] = 0.0f; light[3].spot_direction[1] = -1.0f;
         light[3].spot_direction[2] = 0.0f;
         light[3].spot_cutoff_angle = 15.0f;
-        light[3].spot_exponent = 7.0f;
+        light[3].spot_exponent = 8.0f;
 
 
 
@@ -460,17 +460,93 @@ public class PhongShadingProgram extends GLES30Program{
     }
 
 
-    /*public void set_lights1() {
+    public void set_lights2(float[] viewMatrix, float power) {
         GLES30.glUseProgram(mId);
-        GLES30.glUniform1i(locLight[1].light_on, light[1].light_on);
+        GLES30.glUniform1i(locLight[2].light_on, light[2].light_on);
+        // need to supply position in EC for shading
+        float[] positionEC = new float[4];
+        Matrix.multiplyMV(positionEC, 0, viewMatrix, 0, light[2].position, 0);
+
+        GLES30.glUniform4fv(locLight[2].position, 1, BufferConverter.floatArrayToBuffer(positionEC));
+        GLES30.glUniform4fv(locLight[2].ambient_color, 1, BufferConverter.floatArrayToBuffer(light[2].ambient_color));
+        GLES30.glUniform4fv(locLight[2].diffuse_color, 1, BufferConverter.floatArrayToBuffer(light[2].diffuse_color));
+        GLES30.glUniform4fv(locLight[2].specular_color, 1, BufferConverter.floatArrayToBuffer(light[2].specular_color));
+
+
+        float[] spot_direction = {
+                light[2].spot_direction[0], light[2].spot_direction[1], light[2].spot_direction[2], 0.0f
+        };
+
+        float[] directionEC = new float[4];
+        Matrix.multiplyMV(directionEC, 0, viewMatrix, 0, spot_direction, 0);
+
+        light[2].spot_cutoff_angle = 20.0f - (float) (Math.abs(Math.cos(power)) * 20.0f);
+
+        GLES30.glUniform3fv(locLight[2].spot_direction, 1, BufferConverter.floatArrayToBuffer(directionEC));
+        GLES30.glUniform1f(locLight[2].spot_cutoff_angle, light[2].spot_cutoff_angle);
+        GLES30.glUniform1f(locLight[2].spot_exponent, light[2].spot_exponent);
+        GLES30.glUseProgram(0);
+    }
+
+    /*public void set_lights3(float[] viewMatrix) {
+        GLES30.glUseProgram(mId);
+
+        GLES30.glUniform1i(locLight[3].light_on, light[3].light_on);
+        // need to supply position in EC for shading
+        float[] positionEC = new float[4];
+        Matrix.multiplyMV(positionEC, 0, viewMatrix, 0, light[3].position, 0);
+
+        GLES30.glUniform4fv(locLight[3].position, 1, BufferConverter.floatArrayToBuffer(positionEC));
+        GLES30.glUniform4fv(locLight[3].ambient_color, 1, BufferConverter.floatArrayToBuffer(light[3].ambient_color));
+        GLES30.glUniform4fv(locLight[3].diffuse_color, 1, BufferConverter.floatArrayToBuffer(light[3].diffuse_color));
+        GLES30.glUniform4fv(locLight[3].specular_color, 1, BufferConverter.floatArrayToBuffer(light[3].specular_color));
+
+        float[] spot_direction = {
+                light[3].spot_direction[0], light[3].spot_direction[1], light[3].spot_direction[2], 0.0f
+        };
+
+        float[] directionEC = new float[4];
+        float[] lightMatrix = new float[16];
+        Matrix.setIdentityM(lightMatrix, 0);
+        Matrix.rotateM(lightMatrix, 0, -60.0f, 1.0f, 0.0f, 0.0f);
+        Matrix.multiplyMV(directionEC, 0, lightMatrix, 0 ,spot_direction,0);
+        Matrix.multiplyMV(directionEC,0, viewMatrix , 0, directionEC,0);
+
+        GLES30.glUniform3fv(locLight[3].spot_direction, 1, BufferConverter.floatArrayToBuffer(directionEC));
+        GLES30.glUniform1f(locLight[3].spot_cutoff_angle, light[3].spot_cutoff_angle);
+        GLES30.glUniform1f(locLight[3].spot_exponent, light[3].spot_exponent);
+
         GLES30.glUseProgram(0);
     }*/
 
-    public void set_lights2(float[] viewMatrix, int power) {
+    public void set_lights3(float[] viewMatrix) {
+        GLES30.glUseProgram(mId);
 
-    }
+        GLES30.glUniform1i(locLight[3].light_on, light[3].light_on);
+        // need to supply position in EC for shading
+        float[] positionEC = new float[4];
+        Matrix.multiplyMV(positionEC, 0, viewMatrix, 0, light[3].position, 0);
 
-    public void set_lights3(float[] LightMatrix) {
+        GLES30.glUniform4fv(locLight[3].position, 1, BufferConverter.floatArrayToBuffer(positionEC));
+        GLES30.glUniform4fv(locLight[3].ambient_color, 1, BufferConverter.floatArrayToBuffer(light[3].ambient_color));
+        GLES30.glUniform4fv(locLight[3].diffuse_color, 1, BufferConverter.floatArrayToBuffer(light[3].diffuse_color));
+        GLES30.glUniform4fv(locLight[3].specular_color, 1, BufferConverter.floatArrayToBuffer(light[3].specular_color));
 
+        float[] spot_direction = {
+                light[3].spot_direction[0], light[3].spot_direction[1], light[3].spot_direction[2], 0.0f
+        };
+
+        float[] directionEC = new float[4];
+        float[] lightMatrix = new float[16];
+        Matrix.setIdentityM(lightMatrix, 0);
+        Matrix.rotateM(lightMatrix, 0, -60.0f, 1.0f, 0.0f, 0.0f);
+        Matrix.multiplyMV(directionEC, 0, lightMatrix, 0 ,spot_direction,0);
+        Matrix.multiplyMV(directionEC,0, viewMatrix , 0, directionEC,0);
+
+        GLES30.glUniform3fv(locLight[3].spot_direction, 1, BufferConverter.floatArrayToBuffer(directionEC));
+        GLES30.glUniform1f(locLight[3].spot_cutoff_angle, light[3].spot_cutoff_angle);
+        GLES30.glUniform1f(locLight[3].spot_exponent, light[3].spot_exponent);
+
+        GLES30.glUseProgram(0);
     }
 }
