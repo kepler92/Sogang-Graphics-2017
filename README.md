@@ -11,7 +11,7 @@ Execution environment
 
 Score
 ---
-* HW1: 150 / 120 (Additional Score: 30)
-* HW2: 110 / 100 (Additional Score: 10)
+* HW1: 150 / 120 (Additional Point: 30)
+* HW2: 110 / 100 (Additional Point: 10)
 * HW4: 100 / 100
-* HW5: Not Yet
+* HW5: 140 / 150 (Deduction Point: -10)
