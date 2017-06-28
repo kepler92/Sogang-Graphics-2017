@@ -1,5 +1,9 @@
 # graphics17
 
+Sogang University - Department of Computer Science and Engineering
+
+CSE4170(Introduction to Computer Graphics) 2017-1 Programing Homework
+
 http://grmanet.sogang.ac.kr/ihm/cs170/17/c170_17.htm
 
 
