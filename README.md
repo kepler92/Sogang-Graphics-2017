@@ -1,4 +1,4 @@
-# graphics17
+# Sogang-Graphics-2017
 
 Sogang University - Department of Computer Science and Engineering
 
